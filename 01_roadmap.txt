@@ -1,0 +1,19 @@
+A translation problem is defined as the discrimination of a natural-language-to-natural-language function that maintains meaning. 
+
+
+
+1x files should either:
+
+1) build functions that load in corpora from online (i.e. all hardcoded URLs should be in this series), read csv's from the /data/folder, or load data off the local device. These notebooks should export functions into the load_data module 
+
+2) writes data as csv's into the /data/ folder. These notebooks should be non function-exporting
+
+10_load-data should be a non-exporting notebook that documents the datasets available for use and the loading functionalities available in the load_data module
+
+2x files should either:
+
+1) be human readable investigations into questions that contextualize the translation problem. These files should be non-exporting
+
+2) build functions to interpret data. These notebooks should export functions into the explore_data module.
+
+
