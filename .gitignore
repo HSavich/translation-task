@@ -10,6 +10,7 @@ _tmp*
 tmp*
 tags
 data/
+kaggle_token.json
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
