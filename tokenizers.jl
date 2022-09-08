@@ -1,4 +1,4 @@
-using Flux
+using Flux: onehot
 
 adams_string = open(f->read(f, String), "data/state_union_raw/Adams_1797.txt")#::Vector{SubString}
 
@@ -18,7 +18,7 @@ for (i, w) in enumerate(vocab_words)
 end
 
 L = length(vocab)
-ohe = [OneHotVector(vocab[token], L) for token in adams_tokenized]
+ohe = [onehot(vocab[token], L) for token in adams_tokenized]
 
 """
 c is context size, number of tokens considered on either side
