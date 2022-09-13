@@ -1,3 +1,5 @@
+include("nHotVectors.jl")
+
 const DIR_OF_TXTS = "data/state_union_raw"
 
 dir_files = readdir(DIR_OF_TXTS)
@@ -14,7 +16,6 @@ end
 
 #construct vocab
 vocab = Dict()
-
 
 for txt_file in txt_files
     tokens = tokenize(txt_file)
@@ -37,30 +38,14 @@ for key in keys(vocab)
         top_vocab[key] = length(top_vocab) + 1
     end
 end
+top_vocab["<unk>"] = length(top_vocab) + 1
 print("Length of pruned vocab: ", length(top_vocab))
 
-"""
-Build nHotVector type
-"""
-
-struct nHotVector
-    length ::Int64
-    indices ::Set{Int64}
-end
-
-function sum(nhvs::Vector{nHotVector})
-    if length(nhvs) == 1
-        return(nhvs[1])
+function token_to_ohe(token, vocab)
+    if token in keys(vocab)
+        return(nHotVector(length(vocab), vocab[token]))
     else
-        two_sum = nHotVector(nhvs[1].length, union(nhvs[1].indices, nhvs[2].indices))
-        return(sum(two_sum, nhvs[3:end]...))
+        return(nHotVector(length(vocab), vocab["<unk>"]))
     end
 end
 
-sum(nhvs::nHotVector...) = sum([nhvs...])
-
-Vector(nhv::nHotVector) = [i in nhv.indices for i in 1:nhv.length]
-
-
-a = [1, 10, 4, 4, 12, 9]
-nhvs_ = collect(nHotVector(20, Set([i])) for i in a)
