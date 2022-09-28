@@ -27,7 +27,7 @@ for txt_file in txt_files
             vocab[token] = (a, b+1)
         end
     end
-    print(string("\ndid ", txt_file))
+    print(string("\ndid ", txt_file, "\n"))
     print(length(vocab))
 end
 
