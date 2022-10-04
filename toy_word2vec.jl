@@ -1,24 +1,16 @@
 include("nHotVectors.jl")
+include("tokenizers.jl")
 
 const DIR_OF_TXTS = "data/state_union_raw"
 
 dir_files = readdir(DIR_OF_TXTS)
 txt_files = [f for f in dir_files if occursin(".txt", f)]
 
-function tokenize(filename)
-    #Naive tokenization scheme
-    doc_as_string = open(f->read(f, String), string(DIR_OF_TXTS, "/", filename))
-    doc_as_string = replace(doc_as_string, r"[^\w+]" => " ")
-    doc_as_string = replace(doc_as_string, r"\s+" => " ")
-    doc_as_string = lowercase(doc_as_string)
-    return(split(doc_as_string))
-end
-
 #construct vocab
 vocab = Dict()
 
 for txt_file in txt_files
-    tokens = tokenize(txt_file)
+    tokens = word_tokenize(txt_file, DIR_OF_TXTS)
     for token in tokens
         if !in(token, keys(vocab))
             vocab[token] = (length(vocab) + 1, 1)
@@ -41,11 +33,16 @@ end
 top_vocab["<unk>"] = length(top_vocab) + 1
 print("Length of pruned vocab: ", length(top_vocab))
 
-function token_to_ohe(token, vocab)
-    if token in keys(vocab)
-        return(nHotVector(length(vocab), vocab[token]))
-    else
-        return(nHotVector(length(vocab), vocab["<unk>"]))
-    end
-end
+function context_idxs(idx, context_size, num_tokens)
 
+    first_idx = idx - context_size
+    if idx - context_size < 1
+        first_idx = num_tokens
+    end
+
+    last_idx = idx + context_size
+    if idx + context_size > num_tokens
+        last_idx = num_tokens
+    end
+    return(first_idx:idx-1,idx+1:last_idx)
+end

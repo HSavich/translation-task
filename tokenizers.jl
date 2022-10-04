@@ -1,41 +1,44 @@
-using Flux: onehot
-
-adams_string = open(f->read(f, String), "data/state_union_raw/Adams_1797.txt")#::Vector{SubString}
-
-function string_to_tokens(file_as_string)
-    file_as_string = replace(file_as_string, r"[^\w+]" => " ")
-    file_as_string = replace(file_as_string, r"\s+" => " ")
-    file_as_string = lowercase(file_as_string)
-    return(eachsplit(file_as_string))
+function split_string_into_words(string)
+    letters_or_ws = replace(string, r"[^\w+]" => " ")
+    single_spaced = replace(letters_or_ws, r"\s+" => " ")
+    tidy_string= lowercase(single_spaced)
+    return(split(tidy_string))
 end
 
-adams_tokenized = string_to_tokens(adams_string)
-vocab_words = unique(adams_tokenized)
-
-vocab = Dict()
-for (i, w) in enumerate(vocab_words)
-    vocab[w] = i
+function split_file_into_words(filename, text_dir)
+    #Naive tokenization scheme
+    doc_as_string = open(f->read(f, String), string(text_dir, "/", filename))
+    return(split_string_into_words(doc_as_string))
 end
 
-L = length(vocab)
-ohe = [onehot(vocab[token], L) for token in adams_tokenized]
+function count_words(list_of_words)
+    counter = dict()
+    for word in list_of_words
+        if !in(word, keys(counter)) #new word
+            counter[word] = 1
+        else                        #seen word
+            counter[word] = counter[word] + 1
+        end
+    end
+    return(counter)
+end
 
-"""
-c is context size, number of tokens considered on either side
-"""
-
-function context_idxs(idx, context_size, num_tokens)
-
-    first_idx = idx - context_size
-    if idx - context_size < 1
-        first_idx = num_tokens
+function construct_vocab_from_counter(counter; count_thresh = 0, freq_thresh = nothing)
+    if !(count_thresh == 0 || isnothing(freq_thresh))
+        throw(ArgumentError("Cannot have both a count and frequency threshold"))
+    elseif !isnothing(freq_thresh)
+        num_words = sum([counter[key] for key in keys(counter)])
+        count_thresh = ceiling(freq_thresh * num_words)
     end
 
-    last_idx = idx + context_size
-    if idx + context_size > num_tokens
-        last_idx = num_tokens
-    end
-    return(first_idx:idx-1,idx+1:last_idx)
-end
+    vocab = Dict("<unk>" => 1) #<unk> maps to 1
 
+    for word in keys(counter)
+        if counter[word] > count_thresh
+            vocab[word] = length(vocab) + 1
+        end
+    end
+
+    return(vocab)
+end
 
